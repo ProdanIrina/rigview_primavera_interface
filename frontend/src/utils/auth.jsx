@@ -1,5 +1,5 @@
 export function saveToken(token) {
-  localStorage.setItem("jwt", token);
+  localStorage.setItem("token", token);
 }
 
 export function getToken() {
