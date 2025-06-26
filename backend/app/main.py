@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from jose import jwt
@@ -44,6 +44,11 @@ class Activity(BaseModel):
     status: str
     rig_view_code: str
     gate: str
+
+class SyncLog(BaseModel):
+    date: str
+    status: str  # "success" | "error" | "in_progress"
+    message: str
 
 # =============================
 # ENDPOINTURI
@@ -103,3 +108,33 @@ def ping():
     return {"pong": True}
 
 # Adaugă alte endpointuri după ce ai DB și ai nevoie
+
+@app.get("/logs")
+def get_logs():
+    return [
+        {
+            "date": "2024-06-27 08:00",
+            "status": "in_progress",
+            "message": "Sincronizare pornită."
+        },
+        {
+            "date": "2024-06-27 08:01",
+            "status": "error",
+            "message": "Conexiune eșuată la API Primavera."
+        },
+        {
+            "date": "2024-06-27 08:02",
+            "status": "success",
+            "message": "Sincronizare reușită."
+        }
+    ]
+
+@app.post("/update-rig")
+def update_rig_allocation(data: dict = Body(...)):
+    print("Primit de la RigView:", data)
+    return {"message": "Rig received"}
+
+@app.post("/sync/manual")
+def manual_sync():
+    print("Sincronizare manuală pornită!")
+    return {"message": "Sincronizare pornită"}
