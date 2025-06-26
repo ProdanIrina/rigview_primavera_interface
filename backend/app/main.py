@@ -41,7 +41,7 @@ def login_user(data: LoginRequest):
     token = jwt.encode(token_payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
     return {"token": token}
 
-# =========== ACTIVITY SYNC LOGIC ============
+# =========== ACTIVITĂȚI (Primavera → RigView) ============
 
 class PrimaveraActivity(BaseModel):
     activity_id: str
@@ -105,7 +105,7 @@ def get_activities():
     ]
     return filter_and_map_activities(activities)
 
-# =========== LOGURI MOCK ============
+# =========== LOGURI MOCK (pentru Dashboard) ============
 
 class SyncLog(BaseModel):
     date: str
@@ -132,7 +132,62 @@ def get_logs():
         ),
     ]
 
-# =========== ENDPOINTS MOCK RIGVIEW/INTERFATA ============
+# =========== RIGVIEW → PRIMAVERA (export resurse, buget etc.) ============
+
+class RigResource(BaseModel):
+    rigname: str
+    peloton_id: Optional[str]
+    primavera_id: Optional[str]
+    rig_type: Optional[str]
+
+class BudgetType(BaseModel):
+    uwi: str
+    budget_type: str
+
+class WellType(BaseModel):
+    uwi: str
+    well_type: str
+
+class InitialConcept(BaseModel):
+    uwi: str
+    concept: str
+
+@app.get("/rigs", response_model=List[RigResource])
+def get_rigs():
+    return [
+        RigResource(rigname="Bega 1 HH 102", peloton_id="R102", primavera_id="EPRO-IAP R82", rig_type="TRANSFER"),
+        RigResource(rigname="Dafora 2 - Bentec 350", peloton_id="R105", primavera_id="EPRO-IAP R85", rig_type="TRANSFER"),
+    ]
+
+@app.get("/budgets", response_model=List[BudgetType])
+def get_budgets():
+    return [
+        BudgetType(uwi="UWI-101", budget_type="Dev"),
+        BudgetType(uwi="UWI-102", budget_type="Drilling"),
+    ]
+
+@app.get("/welltypes", response_model=List[WellType])
+def get_welltypes():
+    return [
+        WellType(uwi="UWI-101", well_type="Appraisal"),
+        WellType(uwi="UWI-102", well_type="Development"),
+    ]
+
+@app.get("/concepts", response_model=List[InitialConcept])
+def get_concepts():
+    return [
+        InitialConcept(uwi="UWI-101", concept="AAP"),
+        InitialConcept(uwi="UWI-102", concept="Exploration"),
+    ]
+
+# =========== MOCK POST PRIMAVERA/UPDATE (ca să testezi orice push) ============
+
+@app.post("/primavera/resource")
+def add_resource_to_primavera(resource: RigResource):
+    print("Resource to Primavera:", resource)
+    return {"message": "Resource received"}
+
+# =========== MOCK ENDPOINTURI GENERALE ============
 
 @app.post("/update-rig")
 def update_rig_allocation(data: dict = Body(...)):

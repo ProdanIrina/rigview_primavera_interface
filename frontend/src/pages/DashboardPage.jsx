@@ -11,7 +11,7 @@ function DashboardPage() {
   const { enqueueSnackbar } = useSnackbar();
 
   React.useEffect(() => {
-    fetch("http://localhost:8000/sync/activities")
+    fetch("http://localhost:8000/logs")
       .then(res => res.json())
       .then(data => { setSyncData(data); setLoading(false); })
       .catch(err => { enqueueSnackbar("Eroare la încărcarea sincronizărilor!", { variant: "error" }); setLoading(false); });
