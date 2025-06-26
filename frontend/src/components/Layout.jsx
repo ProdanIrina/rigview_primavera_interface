@@ -6,7 +6,7 @@ import { Link, Outlet, useNavigate } from "react-router-dom";
 const drawerWidth = 220;
 
 const menuItems = [
-  { text: "Dashboard", icon: <Dashboard />, path: "/" },
+  { text: "Dashboard", icon: <Dashboard />, path: "/dashboard" },
   { text: "Sync", icon: <Sync />, path: "/sync" },
   { text: "Loguri", icon: <ListAlt />, path: "/logs" },
 ];
