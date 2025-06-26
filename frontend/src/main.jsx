@@ -1,13 +1,17 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App.jsx";
-import "./index.css";
-import { BrowserRouter } from "react-router-dom";
+import App from "./App";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+
+const theme = createTheme({
+  palette: {
+    primary: { main: "#003B6F" }, // albastru OMV
+    secondary: { main: "#FFD500" }, // galben OMV
+  },
+});
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  </React.StrictMode>
+  <ThemeProvider theme={theme}>
+    <App />
+  </ThemeProvider>
 );
