@@ -1,17 +1,29 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  Box,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  Alert
+} from "@mui/material";
 import { saveToken } from "../utils/auth";
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("testuser");      // user de test
+  const [password, setPassword] = useState("testpass");      // parola de test
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
       const response = await fetch("http://localhost:8000/login", {
@@ -32,54 +44,67 @@ export default function LoginPage() {
       }
     } catch (err) {
       setError("Eroare conexiune cu serverul");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <form
-        onSubmit={handleLogin}
-        className="bg-white p-8 rounded shadow-md w-full max-w-sm"
-      >
-        <h2 className="text-2xl font-semibold mb-6">Autentificare Primavera</h2>
-
-        <input
-          type="text"
-          placeholder="Utilizator"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="mb-4 w-full p-2 border rounded"
-          required
-        />
-
-        <input
-          type="password"
-          placeholder="Parolă"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="mb-4 w-full p-2 border rounded"
-          required
-        />
-
-        <label className="flex items-center mb-4">
-          <input
-            type="checkbox"
-            checked={rememberMe}
-            onChange={() => setRememberMe(!rememberMe)}
-            className="mr-2"
+    <Box
+      minHeight="100vh"
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      sx={{ background: "#f4f6fa" }}
+    >
+      <Paper elevation={6} sx={{ p: 4, minWidth: 340, maxWidth: 400 }}>
+        <Typography variant="h5" fontWeight={600} mb={3} align="center">
+          Autentificare Interfata
+        </Typography>
+        <form onSubmit={handleLogin}>
+          <TextField
+            fullWidth
+            label="Utilizator"
+            margin="normal"
+            autoFocus
+            value={username}
+            onChange={e => setUsername(e.target.value)}
+            required
           />
-          Ține-mă minte
-        </label>
-
-        {error && <p className="text-red-500 mb-2">{error}</p>}
-
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-        >
-          Login
-        </button>
-      </form>
-    </div>
+          <TextField
+            fullWidth
+            label="Parolă"
+            type="password"
+            margin="normal"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            required
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={rememberMe}
+                onChange={e => setRememberMe(e.target.checked)}
+              />
+            }
+            label="Ține-mă minte"
+            sx={{ mb: 2 }}
+          />
+          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ mt: 1, fontWeight: 600 }}
+            disabled={loading}
+          >
+            {loading ? "Se autentifică..." : "Login"}
+          </Button>
+          <Box mt={2} color="text.secondary" fontSize={13} textAlign="center">
+            Pentru test: <b>testuser</b> / <b>testpass</b>
+          </Box>
+        </form>
+      </Paper>
+    </Box>
   );
 }

@@ -1,5 +1,8 @@
 import React from "react";
-import { Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, Button, Box, CircularProgress } from "@mui/material";
+import {
+  Typography, Table, TableBody, TableCell, TableContainer,
+  TableHead, TableRow, Paper, Chip, Button, Box, CircularProgress
+} from "@mui/material";
 import { useSnackbar } from "notistack";
 
 function DashboardPage() {
@@ -7,29 +10,21 @@ function DashboardPage() {
   const [loading, setLoading] = React.useState(true);
   const { enqueueSnackbar } = useSnackbar();
 
-  // Fetch datele la montare componentă
   React.useEffect(() => {
     fetch("http://localhost:8000/sync/activities")
       .then(res => res.json())
-      .then(data => {
-        setSyncData(data); // data trebuie să fie un array de loguri de sync
-        setLoading(false);
-      })
-      .catch(err => {
-        enqueueSnackbar("Eroare la încărcarea sincronizărilor!", { variant: "error" });
-        setLoading(false);
-      });
+      .then(data => { setSyncData(data); setLoading(false); })
+      .catch(err => { enqueueSnackbar("Eroare la încărcarea sincronizărilor!", { variant: "error" }); setLoading(false); });
   }, []);
 
   const handleManualSync = () => {
     enqueueSnackbar("Sincronizare manuală pornită!", { variant: "info" });
-    // Opțional, poți face POST la /sync/activities să declanșezi sync-ul
   };
 
   return (
-    <>
-      <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-        <Typography variant="h5">Status Sincronizări</Typography>
+    <Box sx={{ maxWidth: "100%" }}>
+      <Box display="flex" alignItems="center" justifyContent="space-between" mb={4}>
+        <Typography variant="h5" fontWeight={600}>Status Sincronizări</Typography>
         <Button variant="contained" onClick={handleManualSync}>Sincronizare manuală</Button>
       </Box>
       {loading ? (
@@ -37,45 +32,52 @@ function DashboardPage() {
           <CircularProgress />
         </Box>
       ) : (
-        <TableContainer component={Paper}>
+        <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: 3 }}>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Data</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Mesaj</TableCell>
+                <TableCell><b>Data</b></TableCell>
+                <TableCell><b>Status</b></TableCell>
+                <TableCell><b>Mesaj</b></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {syncData.map((row, idx) => (
-                <TableRow key={idx}>
-                  <TableCell>{row.date || row.timestamp}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={
-                        row.status === "success"
-                          ? "Succes"
-                          : row.status === "error"
-                          ? "Eroare"
-                          : "În curs"
-                      }
-                      color={
-                        row.status === "success"
-                          ? "success"
-                          : row.status === "error"
-                          ? "error"
-                          : "warning"
-                      }
-                    />
-                  </TableCell>
-                  <TableCell>{row.message}</TableCell>
+              {syncData.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={3} align="center">Nu există sincronizări.</TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                syncData.map((row, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell>{row.date || row.timestamp}</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={
+                          row.status === "success"
+                            ? "Succes"
+                            : row.status === "error"
+                            ? "Eroare"
+                            : "În curs"
+                        }
+                        color={
+                          row.status === "success"
+                            ? "success"
+                            : row.status === "error"
+                            ? "error"
+                            : "warning"
+                        }
+                        sx={{ minWidth: 90, fontWeight: 600 }}
+                      />
+                    </TableCell>
+                    <TableCell>{row.message}</TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>
       )}
-    </>
+    </Box>
   );
 }
 export default DashboardPage;

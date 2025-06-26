@@ -1,5 +1,8 @@
 import React from "react";
-import { Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, Box, TextField } from "@mui/material";
+import {
+  Typography, Table, TableBody, TableCell, TableContainer,
+  TableHead, TableRow, Paper, Chip, Box, TextField
+} from "@mui/material";
 
 const mockLogs = [
   { date: "2024-06-27 08:00", level: "info", message: "Sincronizare pornită." },
@@ -17,37 +20,51 @@ function LogsPage() {
   );
 
   return (
-    <>
-      <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-        <Typography variant="h5">Loguri</Typography>
-        <TextField label="Caută în loguri" size="small" value={search} onChange={e => setSearch(e.target.value)} />
+    <Box sx={{ maxWidth: "100%" }}>
+      <Box display="flex" alignItems="center" justifyContent="space-between" mb={4}>
+        <Typography variant="h5" fontWeight={600}>Loguri</Typography>
+        <TextField
+          label="Caută în loguri"
+          size="small"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          sx={{ minWidth: 220 }}
+        />
       </Box>
-      <TableContainer component={Paper}>
+      <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: 3 }}>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Data</TableCell>
-              <TableCell>Tip</TableCell>
-              <TableCell>Mesaj</TableCell>
+              <TableCell><b>Data</b></TableCell>
+              <TableCell><b>Tip</b></TableCell>
+              <TableCell><b>Mesaj</b></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredLogs.map((log, idx) => (
-              <TableRow key={idx}>
-                <TableCell>{log.date}</TableCell>
-                <TableCell>
-                  <Chip
-                    label={log.level === "error" ? "Eroare" : "Info"}
-                    color={log.level === "error" ? "error" : "info"}
-                  />
-                </TableCell>
-                <TableCell>{log.message}</TableCell>
+            {filteredLogs.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={3} align="center">Nu există loguri.</TableCell>
               </TableRow>
-            ))}
+            ) : (
+              filteredLogs.map((log, idx) => (
+                <TableRow key={idx}>
+                  <TableCell>{log.date}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={log.level === "error" ? "Eroare" : "Info"}
+                      color={log.level === "error" ? "error" : "info"}
+                      sx={{ minWidth: 70, fontWeight: 600 }}
+                    />
+                  </TableCell>
+                  <TableCell>{log.message}</TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>
-    </>
+    </Box>
   );
 }
+
 export default LogsPage;

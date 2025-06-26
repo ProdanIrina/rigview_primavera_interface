@@ -15,7 +15,6 @@ function Layout() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // aici ștergi tokenul, sesiunea, etc.
     localStorage.removeItem("token");
     navigate("/login");
   };
@@ -24,11 +23,43 @@ function Layout() {
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
       <AppBar position="fixed" sx={{ zIndex: 1201 }}>
-        <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            <img src="/logo.png" alt="Logo" height="40" style={{ verticalAlign: "middle", marginRight: 12 }} />
-            RigView–Primavera Interface
-          </Typography>
+        <Toolbar
+          variant="dense"
+          sx={{
+            minHeight: 56,
+            display: "flex",
+            alignItems: "center",
+            px: 2,
+          }}
+        >
+          <Box display="flex" alignItems="center" sx={{ flexGrow: 1 }}>
+            <img
+              src="/logo.png"
+              alt="Logo"
+              height="40"
+              style={{
+                background: "white",
+                borderRadius: 8,
+                padding: 3,
+                marginRight: 18,
+                boxShadow: "0 0 6px #0002",
+                marginTop: 8,        // mai jos
+                marginBottom: 4,     // spațiu jos
+                display: "block",
+              }}
+            />
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: 26,
+                fontWeight: 500,
+                lineHeight: 1.1,
+                mt: 1, // puțin mai sus față de logo
+              }}
+            >
+              RigView–Primavera Interface
+            </Typography>
+          </Box>
           <Tooltip title="Deconectare">
             <IconButton color="inherit" onClick={handleLogout}>
               <Logout />
@@ -44,7 +75,7 @@ function Layout() {
           [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: "border-box" }
         }}
       >
-        <Toolbar />
+        <Toolbar variant="dense" sx={{ minHeight: 56 }} />
         <List>
           {menuItems.map((item) => (
             <ListItem button component={Link} to={item.path} key={item.text}>
@@ -54,9 +85,9 @@ function Layout() {
           ))}
         </List>
       </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, p: 3, ml: `${drawerWidth}px` }}>
-        <Toolbar />
-        <Outlet /> {/* aici se randează paginile din router */}
+      <Box component="main" sx={{ flexGrow: 1, pl: 0, pr: 2, pt: 3, ml: '22px' }}>
+        <Toolbar variant="dense" sx={{ minHeight: 56 }} />
+        <Outlet />
       </Box>
     </Box>
   );
