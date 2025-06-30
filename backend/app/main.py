@@ -17,7 +17,6 @@ app.add_middleware(
 )
 
 # =========== JWT LOGIN MOCK ============
-
 JWT_SECRET = os.getenv("JWT_SECRET", "testjwtsecret")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 
@@ -33,7 +32,6 @@ def login_user(data: LoginRequest):
         or (data.username == "testuser" and data.password == "testpass")
     ):
         raise HTTPException(status_code=401, detail="Credentiale invalide")
-
     token_payload = {
         "sub": data.username,
         "exp": datetime.utcnow() + timedelta(hours=12)
@@ -41,8 +39,61 @@ def login_user(data: LoginRequest):
     token = jwt.encode(token_payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
     return {"token": token}
 
-# =========== ACTIVITĂȚI (Primavera → RigView) ============
+# =========== DASHBOARD - STATUS SYNC ============
+class SyncStatus(BaseModel):
+    id: int
+    timestamp: str
+    sync_type: str          # Ex: "Primavera → RigView", "RigView → Primavera"
+    status: str             # "success", "error", "in_progress"
+    message: str
+    initiated_by: str
 
+@app.get("/status", response_model=List[SyncStatus])
+def get_sync_status():
+    return [
+        SyncStatus(
+            id=1,
+            timestamp="2024-06-27 08:00",
+            sync_type="Primavera → RigView",
+            status="success",
+            message="Sincronizare terminată cu succes.",
+            initiated_by="admin"
+        ),
+        SyncStatus(
+            id=2,
+            timestamp="2024-06-27 09:10",
+            sync_type="RigView → Primavera",
+            status="error",
+            message="Eroare la API Primavera.",
+            initiated_by="irina.prodan"
+        ),
+        SyncStatus(
+            id=3,
+            timestamp="2024-06-27 09:30",
+            sync_type="Primavera → RigView",
+            status="in_progress",
+            message="Se execută sincronizare...",
+            initiated_by="admin"
+        ),
+    ]
+
+# =========== LOGURI GENERALE (pentru LogsPage) ============
+class AppLog(BaseModel):
+    date: str
+    level: str        # "info" | "error"
+    component: str    # "sync_job", "backend", "frontend", etc
+    message: str
+
+@app.get("/logs", response_model=List[AppLog])
+def get_logs():
+    return [
+        AppLog(date="2024-06-27 08:00", level="info", component="sync_job", message="Sincronizare pornită."),
+        AppLog(date="2024-06-27 08:01", level="error", component="backend", message="Conexiune eșuată la API Primavera."),
+        AppLog(date="2024-06-27 08:02", level="info", component="frontend", message="Retry programat."),
+        AppLog(date="2024-06-27 08:03", level="info", component="sync_job", message="Sincronizare manuală pornită de admin."),
+    ]
+
+# =========== MOCK ACTIVITĂȚI (Primavera → RigView) ============
 class PrimaveraActivity(BaseModel):
     activity_id: str
     name: str
@@ -105,35 +156,7 @@ def get_activities():
     ]
     return filter_and_map_activities(activities)
 
-# =========== LOGURI MOCK (pentru Dashboard) ============
-
-class SyncLog(BaseModel):
-    date: str
-    status: str  # "success" | "error" | "in_progress"
-    message: str
-
-@app.get("/logs", response_model=List[SyncLog])
-def get_logs():
-    return [
-        SyncLog(
-            date="2024-06-27 08:00",
-            status="in_progress",
-            message="Sincronizare pornită."
-        ),
-        SyncLog(
-            date="2024-06-27 08:01",
-            status="error",
-            message="Conexiune eșuată la API Primavera."
-        ),
-        SyncLog(
-            date="2024-06-27 08:02",
-            status="success",
-            message="Sincronizare reușită."
-        ),
-    ]
-
-# =========== RIGVIEW → PRIMAVERA (export resurse, buget etc.) ============
-
+# =========== RIGVIEW → PRIMAVERA MOCKS ============
 class RigResource(BaseModel):
     rigname: str
     peloton_id: Optional[str]
@@ -181,7 +204,6 @@ def get_concepts():
     ]
 
 # =========== MOCK POST PRIMAVERA/UPDATE (ca să testezi orice push) ============
-
 @app.post("/primavera/resource")
 def add_resource_to_primavera(resource: RigResource):
     print("Resource to Primavera:", resource)

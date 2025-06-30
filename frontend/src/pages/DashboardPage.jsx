@@ -11,7 +11,7 @@ function DashboardPage() {
   const { enqueueSnackbar } = useSnackbar();
 
   React.useEffect(() => {
-    fetch("http://localhost:8000/logs")
+    fetch("http://localhost:8000/status")
       .then(res => res.json())
       .then(data => { setSyncData(data); setLoading(false); })
       .catch(err => { enqueueSnackbar("Eroare la încărcarea sincronizărilor!", { variant: "error" }); setLoading(false); });
@@ -34,9 +34,10 @@ function DashboardPage() {
       ) : (
         <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: 3 }}>
           <Table>
-            <TableHead>
+           <TableHead>
               <TableRow>
                 <TableCell><b>Data</b></TableCell>
+                <TableCell><b>Direcție</b></TableCell>
                 <TableCell><b>Status</b></TableCell>
                 <TableCell><b>Mesaj</b></TableCell>
               </TableRow>
@@ -44,12 +45,17 @@ function DashboardPage() {
             <TableBody>
               {syncData.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={3} align="center">Nu există sincronizări.</TableCell>
+                  <TableCell colSpan={4} align="center">Nu există sincronizări.</TableCell>
                 </TableRow>
               ) : (
                 syncData.map((row, idx) => (
                   <TableRow key={idx}>
-                    <TableCell>{row.date || row.timestamp}</TableCell>
+                    <TableCell>{row.timestamp || row.date}</TableCell>
+                    {/* AICI e direcția */}
+                    <TableCell>
+                      {row.sync_type || "-"}
+                    </TableCell>
+                    {/* Status ca chip */}
                     <TableCell>
                       <Chip
                         label={

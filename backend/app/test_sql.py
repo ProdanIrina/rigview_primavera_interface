@@ -1,16 +1,15 @@
 import pyodbc
+import getpass
+
+password = getpass.getpass("Introdu parola pentru irina.prodan: ")
 
 conn = pyodbc.connect(
-    "DRIVER={ODBC Driver 18 for SQL Server};"
-    "SERVER=159.69.61.211,1433;"
-    "DATABASE=RigView;"
-    "UID=irina.prodan;"
-    "PWD=parola123;"
+    f"DRIVER={{ODBC Driver 18 for SQL Server}};"
+    f"SERVER=159.69.61.211\\TEST,1434;"
+    f"DATABASE=RigView;"
+    f"UID=irina.prodan;"
+    f"PWD={password};"
     "TrustServerCertificate=yes;"
     "Encrypt=no"
 )
-cursor = conn.cursor()
-cursor.execute("SELECT GETDATE()")
-print(cursor.fetchone())
-cursor.close()
-conn.close()
+print("Conexiune reușită!")
