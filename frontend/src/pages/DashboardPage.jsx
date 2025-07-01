@@ -38,6 +38,7 @@ function DashboardPage() {
               <TableRow>
                 <TableCell><b>Data</b></TableCell>
                 <TableCell><b>Direcție</b></TableCell>
+                <TableCell><b>Tip sincronizare</b></TableCell>
                 <TableCell><b>Status</b></TableCell>
                 <TableCell><b>Mesaj</b></TableCell>
               </TableRow>
@@ -45,17 +46,14 @@ function DashboardPage() {
             <TableBody>
               {syncData.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} align="center">Nu există sincronizări.</TableCell>
+                  <TableCell colSpan={5} align="center">Nu există sincronizări.</TableCell>
                 </TableRow>
               ) : (
                 syncData.map((row, idx) => (
                   <TableRow key={idx}>
                     <TableCell>{row.timestamp || row.date}</TableCell>
-                    {/* AICI e direcția */}
-                    <TableCell>
-                      {row.sync_type || "-"}
-                    </TableCell>
-                    {/* Status ca chip */}
+                    <TableCell>{row.direction || "-"}</TableCell>
+                    <TableCell>{row.sync_type || "-"}</TableCell>
                     <TableCell>
                       <Chip
                         label={

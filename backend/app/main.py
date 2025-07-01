@@ -1,10 +1,17 @@
-from fastapi import FastAPI, HTTPException, Body
+import os
+import pyodbc
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from jose import jwt
-from datetime import datetime, timedelta
-from typing import List, Optional
-import os
+from typing import List
+from dotenv import load_dotenv
+
+# Încarcă variabilele din .env
+load_dotenv()
+DB_CONNECTION_STRING = os.getenv("DB_CONNECTION_STRING")
+
+def get_db_conn():
+    return pyodbc.connect(DB_CONNECTION_STRING)
 
 app = FastAPI()
 
@@ -16,210 +23,133 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# =========== JWT LOGIN MOCK ============
-JWT_SECRET = os.getenv("JWT_SECRET", "testjwtsecret")
-JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+# =================== Login ===================
 
 class LoginRequest(BaseModel):
     username: str
     password: str
-    remember: bool = False
 
 @app.post("/login")
 def login_user(data: LoginRequest):
-    if not (
-        (data.username == "admin" and data.password == "test123")
-        or (data.username == "testuser" and data.password == "testpass")
-    ):
-        raise HTTPException(status_code=401, detail="Credentiale invalide")
-    token_payload = {
-        "sub": data.username,
-        "exp": datetime.utcnow() + timedelta(hours=12)
-    }
-    token = jwt.encode(token_payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
-    return {"token": token}
+    # Exemplu test user hardcodat
+    if data.username == "testuser" and data.password == "testpass":
+        return {"token": "test-token"}
+    # Sau caută în baza de date
+    conn = get_db_conn()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id FROM credentials WHERE username = ? AND password = ?",
+        (data.username, data.password)
+    )
+    row = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    if row:
+        return {"token": "jwt-or-mock-token"}
+    raise HTTPException(status_code=401, detail="Credentiale invalide")
 
-# =========== DASHBOARD - STATUS SYNC ============
+# =================== Dashboard Status ===================
+
 class SyncStatus(BaseModel):
     id: int
     timestamp: str
-    sync_type: str          # Ex: "Primavera → RigView", "RigView → Primavera"
-    status: str             # "success", "error", "in_progress"
+    direction: str
+    sync_type: str
+    status: str
     message: str
-    initiated_by: str
 
 @app.get("/status", response_model=List[SyncStatus])
 def get_sync_status():
-    return [
+    conn = get_db_conn()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT id, timestamp, direction, sync_type, status, message
+        FROM sync_status
+        ORDER BY timestamp DESC
+    """)
+    rows = cursor.fetchall()
+    result = [
         SyncStatus(
-            id=1,
-            timestamp="2024-06-27 08:00",
-            sync_type="Primavera → RigView",
-            status="success",
-            message="Sincronizare terminată cu succes.",
-            initiated_by="admin"
-        ),
-        SyncStatus(
-            id=2,
-            timestamp="2024-06-27 09:10",
-            sync_type="RigView → Primavera",
-            status="error",
-            message="Eroare la API Primavera.",
-            initiated_by="irina.prodan"
-        ),
-        SyncStatus(
-            id=3,
-            timestamp="2024-06-27 09:30",
-            sync_type="Primavera → RigView",
-            status="in_progress",
-            message="Se execută sincronizare...",
-            initiated_by="admin"
-        ),
+            id=row.id,
+            timestamp=row.timestamp.strftime("%Y-%m-%d %H:%M"),
+            direction=row.direction,
+            sync_type=row.sync_type,
+            status=row.status,
+            message=row.message
+        )
+        for row in rows
     ]
+    cursor.close()
+    conn.close()
+    return result
 
-# =========== LOGURI GENERALE (pentru LogsPage) ============
+# =================== Logs (Audit) ===================
+
 class AppLog(BaseModel):
     date: str
-    level: str        # "info" | "error"
-    component: str    # "sync_job", "backend", "frontend", etc
+    level: str
+    component: str
+    action: str
+    initiated_by: str
+    status: str
     message: str
 
 @app.get("/logs", response_model=List[AppLog])
 def get_logs():
-    return [
-        AppLog(date="2024-06-27 08:00", level="info", component="sync_job", message="Sincronizare pornită."),
-        AppLog(date="2024-06-27 08:01", level="error", component="backend", message="Conexiune eșuată la API Primavera."),
-        AppLog(date="2024-06-27 08:02", level="info", component="frontend", message="Retry programat."),
-        AppLog(date="2024-06-27 08:03", level="info", component="sync_job", message="Sincronizare manuală pornită de admin."),
+    conn = get_db_conn()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT date, level, component, action, initiated_by, status, message
+        FROM app_log
+        ORDER BY date DESC
+    """)
+    rows = cursor.fetchall()
+    result = [
+        AppLog(
+            date=row.date.strftime("%Y-%m-%d %H:%M"),
+            level=row.level,
+            component=row.component,
+            action=row.action,
+            initiated_by=row.initiated_by,
+            status=row.status,
+            message=row.message
+        )
+        for row in rows
     ]
+    cursor.close()
+    conn.close()
+    return result
 
-# =========== MOCK ACTIVITĂȚI (Primavera → RigView) ============
-class PrimaveraActivity(BaseModel):
-    activity_id: str
-    name: str
-    uwi: Optional[str]
-    start: str
-    finish: str
-    status: str
-    rig_view_code: str
-    project_status: str
+# =================== Credentiale - exemplu ===================
 
-class RigViewActivity(BaseModel):
-    activity_id: str
-    gate: str
-    uwi: str
-    start_date: str
-    complete_date: str
-    status: str
-    rig_view: str
+class Credential(BaseModel):
+    id: int
+    username: str
+    created_at: str
 
-def filter_and_map_activities(activities: List[PrimaveraActivity]) -> List[RigViewActivity]:
-    filtered = []
-    for act in activities:
-        if act.project_status in ["Completed", "Canceled"]:
-            continue
-        if act.rig_view_code not in ("S", "AR"):
-            continue
-        if not act.uwi:
-            continue
-        filtered.append(RigViewActivity(
-            activity_id=act.activity_id,
-            gate=act.name,
-            uwi=act.uwi,
-            start_date=act.start,
-            complete_date=act.finish,
-            status=act.status,
-            rig_view=act.rig_view_code,
-        ))
-    return filtered
-
-@app.get("/sync/activities", response_model=List[RigViewActivity])
-def get_activities():
-    # MOCK: Replace with DB/API data when ready!
-    activities = [
-        PrimaveraActivity(
-            activity_id="A1010", name="Land rental for access road...", uwi="123", start="2024-07-01",
-            finish="2024-07-05", status="Not Started", rig_view_code="S", project_status="Active"
-        ),
-        PrimaveraActivity(
-            activity_id="A1200", name="Flowline execution", uwi="234", start="2024-08-01",
-            finish="2024-08-05", status="Completed", rig_view_code="AR", project_status="Completed"
-        ),
-        PrimaveraActivity(
-            activity_id="A1210", name="Drilling activity", uwi="999", start="2024-09-01",
-            finish="2024-09-05", status="In Progress", rig_view_code="AR", project_status="Active"
-        ),
-        PrimaveraActivity(
-            activity_id="A1300", name="Some other activity", uwi=None, start="2024-10-01",
-            finish="2024-10-05", status="Not Started", rig_view_code="S", project_status="Active"
-        ),
+@app.get("/credentials", response_model=List[Credential])
+def get_credentials():
+    conn = get_db_conn()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT id, username, created_at
+        FROM credentials
+        ORDER BY created_at DESC
+    """)
+    rows = cursor.fetchall()
+    result = [
+        Credential(
+            id=row.id,
+            username=row.username,
+            created_at=row.created_at.strftime("%Y-%m-%d %H:%M")
+        )
+        for row in rows
     ]
-    return filter_and_map_activities(activities)
+    cursor.close()
+    conn.close()
+    return result
 
-# =========== RIGVIEW → PRIMAVERA MOCKS ============
-class RigResource(BaseModel):
-    rigname: str
-    peloton_id: Optional[str]
-    primavera_id: Optional[str]
-    rig_type: Optional[str]
-
-class BudgetType(BaseModel):
-    uwi: str
-    budget_type: str
-
-class WellType(BaseModel):
-    uwi: str
-    well_type: str
-
-class InitialConcept(BaseModel):
-    uwi: str
-    concept: str
-
-@app.get("/rigs", response_model=List[RigResource])
-def get_rigs():
-    return [
-        RigResource(rigname="Bega 1 HH 102", peloton_id="R102", primavera_id="EPRO-IAP R82", rig_type="TRANSFER"),
-        RigResource(rigname="Dafora 2 - Bentec 350", peloton_id="R105", primavera_id="EPRO-IAP R85", rig_type="TRANSFER"),
-    ]
-
-@app.get("/budgets", response_model=List[BudgetType])
-def get_budgets():
-    return [
-        BudgetType(uwi="UWI-101", budget_type="Dev"),
-        BudgetType(uwi="UWI-102", budget_type="Drilling"),
-    ]
-
-@app.get("/welltypes", response_model=List[WellType])
-def get_welltypes():
-    return [
-        WellType(uwi="UWI-101", well_type="Appraisal"),
-        WellType(uwi="UWI-102", well_type="Development"),
-    ]
-
-@app.get("/concepts", response_model=List[InitialConcept])
-def get_concepts():
-    return [
-        InitialConcept(uwi="UWI-101", concept="AAP"),
-        InitialConcept(uwi="UWI-102", concept="Exploration"),
-    ]
-
-# =========== MOCK POST PRIMAVERA/UPDATE (ca să testezi orice push) ============
-@app.post("/primavera/resource")
-def add_resource_to_primavera(resource: RigResource):
-    print("Resource to Primavera:", resource)
-    return {"message": "Resource received"}
-
-# =========== MOCK ENDPOINTURI GENERALE ============
-
-@app.post("/update-rig")
-def update_rig_allocation(data: dict = Body(...)):
-    print("Primit de la RigView:", data)
-    return {"message": "Rig received"}
-
-@app.post("/sync/manual")
-def manual_sync():
-    print("Sincronizare manuală pornită!")
-    return {"message": "Sincronizare pornită"}
+# =================== Health & Test endpoints ===================
 
 @app.get("/")
 def hello():

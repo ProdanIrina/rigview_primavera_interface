@@ -24,19 +24,22 @@ function LogsPage() {
     log =>
       log.message.toLowerCase().includes(search.toLowerCase()) ||
       log.level.toLowerCase().includes(search.toLowerCase()) ||
-      log.component.toLowerCase().includes(search.toLowerCase())
+      log.component.toLowerCase().includes(search.toLowerCase()) ||
+      (log.action && log.action.toLowerCase().includes(search.toLowerCase())) ||
+      (log.initiated_by && log.initiated_by.toLowerCase().includes(search.toLowerCase()))
   );
 
-  // Exportă în Excel
+  // Exportă în Excel (cu toate coloanele)
   const handleExportExcel = () => {
-    // Convertim la format SheetJS-friendly
     const wsData = filteredLogs.map(log => ({
       Data: log.date,
-      Tip: log.level === "error" ? "Eroare" : "Info",
+      Tip: log.level,
       Componentă: log.component,
+      Acțiune: log.action,
+      'Inițiat de': log.initiated_by,
+      Status: log.status,
       Mesaj: log.message,
     }));
-
     const worksheet = XLSX.utils.json_to_sheet(wsData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Loguri");
@@ -72,13 +75,16 @@ function LogsPage() {
                 <TableCell><b>Data</b></TableCell>
                 <TableCell><b>Tip</b></TableCell>
                 <TableCell><b>Componentă</b></TableCell>
+                <TableCell><b>Acțiune</b></TableCell>
+                <TableCell><b>Inițiat de</b></TableCell>
+                <TableCell><b>Status</b></TableCell>
                 <TableCell><b>Mesaj</b></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {filteredLogs.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} align="center">Nu există loguri.</TableCell>
+                  <TableCell colSpan={7} align="center">Nu există loguri.</TableCell>
                 </TableRow>
               ) : (
                 filteredLogs.map((log, idx) => (
@@ -86,12 +92,41 @@ function LogsPage() {
                     <TableCell>{log.date}</TableCell>
                     <TableCell>
                       <Chip
-                        label={log.level === "error" ? "Eroare" : "Info"}
-                        color={log.level === "error" ? "error" : "info"}
+                        label={log.level}
+                        color={
+                          log.level === "error" ? "error" :
+                          log.level === "warning" ? "warning" :
+                          "info"
+                        }
                         sx={{ minWidth: 70, fontWeight: 600 }}
                       />
                     </TableCell>
                     <TableCell>{log.component}</TableCell>
+                    <TableCell>{log.action}</TableCell>
+                    <TableCell>{log.initiated_by}</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={
+                          log.status === "success"
+                            ? "Succes"
+                            : log.status === "error"
+                            ? "Eroare"
+                            : log.status === "pending"
+                            ? "În curs"
+                            : log.status
+                        }
+                        color={
+                          log.status === "success"
+                            ? "success"
+                            : log.status === "error"
+                            ? "error"
+                            : log.status === "pending"
+                            ? "warning"
+                            : "default"
+                        }
+                        sx={{ minWidth: 70, fontWeight: 600 }}
+                      />
+                    </TableCell>
                     <TableCell>{log.message}</TableCell>
                   </TableRow>
                 ))

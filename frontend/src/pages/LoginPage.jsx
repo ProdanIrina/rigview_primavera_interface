@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -13,12 +13,27 @@ import {
 import { saveToken } from "../utils/auth";
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("testuser");      // user de test
-  const [password, setPassword] = useState("testpass");      // parola de test
+  // Vezi dacă există credentiale salvate (userul real sau de test, ce primești de la API)
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // La montare, opțional: încearcă să preiei user/parolă din API (dacă există și remember)
+  useEffect(() => {
+    fetch("http://localhost:8000/credentials/latest")
+      .then(res => res.json())
+      .then(data => {
+        if (data?.username && data?.password) {
+          setUsername(data.username);
+          setPassword(data.password);  // În real life, parola nu ar trebui să fie vizibilă așa, dar pentru mock e ok
+          setRememberMe(true);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -59,17 +74,18 @@ export default function LoginPage() {
     >
       <Paper elevation={6} sx={{ p: 4, minWidth: 340, maxWidth: 400 }}>
         <Typography variant="h5" fontWeight={600} mb={3} align="center">
-          Autentificare Interfata
+          Autentificare Interfață
         </Typography>
         <form onSubmit={handleLogin}>
           <TextField
             fullWidth
-            label="Utilizator"
+            label="Utilizator Primavera"
             margin="normal"
             autoFocus
             value={username}
             onChange={e => setUsername(e.target.value)}
             required
+            autoComplete="username"
           />
           <TextField
             fullWidth
@@ -79,6 +95,7 @@ export default function LoginPage() {
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
+            autoComplete="current-password"
           />
           <FormControlLabel
             control={
@@ -101,7 +118,8 @@ export default function LoginPage() {
             {loading ? "Se autentifică..." : "Login"}
           </Button>
           <Box mt={2} color="text.secondary" fontSize={13} textAlign="center">
-            Pentru test: <b>testuser</b> / <b>testpass</b>
+            {/* Poți ascunde pe PROD! */}
+            Pentru test rapid: <b>testuser</b> / <b>testpass</b>
           </Box>
         </form>
       </Paper>
