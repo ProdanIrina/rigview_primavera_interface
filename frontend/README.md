@@ -1,6 +1,3 @@
-Sigur! Uite conținutul pentru `frontend/README.md` scris ca bloc de cod, să-l copiezi direct:
-
-```markdown
 # RigView–Primavera Interface (Frontend)
 
 > Interfață React pentru vizualizarea și gestionarea sincronizării dintre Primavera și RigView.
@@ -102,4 +99,4 @@ npm run build
 
 ### Copiază direct acest cod în `frontend/README.md` și ai un README complet și curat!  
 Dacă vrei și exemplu pentru backend, spune și ți-l scriu imediat, în același stil.
-```
+
