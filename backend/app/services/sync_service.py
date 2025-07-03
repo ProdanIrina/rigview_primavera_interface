@@ -1,33 +1,41 @@
-from app.models.activity import PrimaveraActivity, RigViewActivity
-from typing import List
+from typing import List, Dict
+from app.services.primavera_client import (
+    get_projects,
+    get_project_codes,
+    get_activities,
+    extract_uwi_from_codes,
+    extract_rigview_code,
+)
+from app.models.activity import RigViewActivity  # trebuie să ai acest model (poate fi Pydantic)
 
-def get_primavera_activities() -> List[RigViewActivity]:
-    # Aici va fi conexiunea cu Primavera REST API sau SQL (momentan mock)
-    activities = [
-        PrimaveraActivity(
-            activity_id="A1010", name="Land rental...", uwi="123", start="2024-07-01",
-            finish="2024-07-05", status="Not Started", rig_view_code="S", project_status="Active"
-        ),
-        PrimaveraActivity(
-            activity_id="A1200", name="Flowline execution", uwi="234", start="2024-08-01",
-            finish="2024-08-05", status="Completed", rig_view_code="AR", project_status="Completed"
-        ),
-    ]
-    filtered = []
-    for act in activities:
-        if act.project_status in ["Completed", "Canceled"]:
-            continue
-        if act.rig_view_code not in ("S", "AR"):
-            continue
-        if not act.uwi:
-            continue
-        filtered.append(RigViewActivity(
-            activity_id=act.activity_id,
-            gate=act.name,
-            uwi=act.uwi,
-            start_date=act.start,
-            complete_date=act.finish,
-            status=act.status,
-            rig_view=act.rig_view_code,
-        ))
-    return filtered
+def get_primavera_activities_for_sync() -> List[RigViewActivity]:
+    """
+    Returnează lista de activități din Primavera care trebuie sincronizate
+    (doar proiecte active, doar activități cu RigView S/AR, doar dacă există UWI)
+    """
+    result = []
+    projects = get_projects()
+    for proj in projects:
+        project_id = proj.get("ObjectId")
+        codes = get_project_codes(project_id)
+        uwi = extract_uwi_from_codes(codes)
+        if not uwi:
+            continue  # Sare proiectele fără UWI
+        acts = get_activities(project_id)
+        for act in acts:
+            rigview_code = extract_rigview_code(act)
+            if rigview_code not in ["S", "AR"]:
+                continue
+            # Construiți structura RigViewActivity (adaptează după modelul tău)
+            result.append(
+                RigViewActivity(
+                    activity_id=act.get("Id"),
+                    gate=act.get("Name"),
+                    uwi=uwi,
+                    start_date=act.get("StartDate"),
+                    complete_date=act.get("FinishDate"),
+                    status=act.get("Status"),
+                    rig_view=rigview_code,
+                )
+            )
+    return result
