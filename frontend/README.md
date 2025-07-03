@@ -6,7 +6,7 @@
 
 ## 📁 Structura proiectului
 
-```
+
 
 frontend/
 ├── public/
@@ -25,21 +25,16 @@ frontend/
 ├── vite.config.js
 └── etc.
 
-````
 
 ---
 
 ## ⚙️ Pornire locală
 
 1. **Instalează dependențele:**
-    ```bash
     npm install
-    ```
 
 2. **Pornește aplicația:**
-    ```bash
     npm run dev
-    ```
     > Aplicația va fi disponibilă pe [http://localhost:5173](http://localhost:5173).
 
 ---
@@ -59,12 +54,10 @@ frontend/
 
 - **LoginPage.jsx** folosește endpointul `/login` de pe backend (FastAPI).
 - User de test rapid:  
-````
 
 user: testuser
 pass: testpass
 
-````
 
 ---
 
@@ -78,15 +71,11 @@ pass: testpass
 ## 📦 Comenzi utile
 
 - **Build pentru producție:**  
-```bash
 npm run build
-````
 
 * **Preview local build de producție:**
 
-  ```bash
   npm run preview
-  ```
 
 ---
 
@@ -95,7 +84,6 @@ npm run build
 * Pentru probleme tehnice, contactează echipa de dezvoltare sau deschide un issue.
 * Documentație suplimentară: vezi și `backend/README.md`.
 
-```
 
 ### Copiază direct acest cod în `frontend/README.md` și ai un README complet și curat!  
 Dacă vrei și exemplu pentru backend, spune și ți-l scriu imediat, în același stil.
