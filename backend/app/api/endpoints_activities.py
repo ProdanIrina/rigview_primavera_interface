@@ -1,11 +1,10 @@
-from fastapi import APIRouter, HTTPException
-from app.services.primavera_client import fetch_all_activities
+from fastapi import APIRouter
+from typing import List
+from app.models.activity import RigViewActivity
+from app.services.sync_service import get_sync_activities
 
 router = APIRouter()
 
-@router.get("/primavera/activities")
-def get_primavera_activities():
-    try:
-        return fetch_all_activities()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+@router.get("/sync/activities", response_model=List[RigViewActivity])
+def sync_activities():
+    return get_sync_activities()
