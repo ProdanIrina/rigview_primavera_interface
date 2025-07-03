@@ -1,10 +1,11 @@
 from fastapi import APIRouter
-from ..database import get_db_conn
-from ..models.credential import Credential
+from app.database import get_db_conn
+from app.models.credential import Credential
+from typing import List
 
 router = APIRouter()
 
-@router.get("/credentials", response_model=list[Credential])
+@router.get("/credentials", response_model=List[Credential])
 def get_credentials():
     conn = get_db_conn()
     cursor = conn.cursor()

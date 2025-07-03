@@ -1,10 +1,11 @@
 from fastapi import APIRouter
-from ..database import get_db_conn
-from ..models.app_log import AppLog
+from app.database import get_db_conn
+from app.models.app_log import AppLog
+from typing import List
 
 router = APIRouter()
 
-@router.get("/logs", response_model=list[AppLog])
+@router.get("/logs", response_model=List[AppLog])
 def get_logs():
     conn = get_db_conn()
     cursor = conn.cursor()

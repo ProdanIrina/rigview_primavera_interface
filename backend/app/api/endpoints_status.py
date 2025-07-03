@@ -1,10 +1,11 @@
 from fastapi import APIRouter
-from ..database import get_db_conn
-from ..models.sync_status import SyncStatus
+from app.database import get_db_conn
+from app.models.sync_status import SyncStatus
+from typing import List
 
 router = APIRouter()
 
-@router.get("/status", response_model=list[SyncStatus])
+@router.get("/status", response_model=List[SyncStatus])
 def get_sync_status():
     conn = get_db_conn()
     cursor = conn.cursor()

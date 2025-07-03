@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from ..database import get_db_conn
+from app.database import get_db_conn
+from app.utils.security import create_jwt_token
 
 router = APIRouter()
 
@@ -26,5 +27,5 @@ def login_user(data: LoginRequest):
     conn.close()
 
     if row:
-        return {"token": "jwt-or-mock-token"}
+        return {"token": create_jwt_token(data.username)}
     raise HTTPException(status_code=401, detail="Credentiale invalide")

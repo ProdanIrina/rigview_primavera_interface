@@ -1,9 +1,5 @@
-import os
+from app.utils.config import PRIMAVERA_API_URL, PRIMAVERA_USER, PRIMAVERA_PASS
 import requests
-
-PRIMAVERA_API_URL = os.getenv("PRIMAVERA_API_URL")  # ex: https://primavera.company.com/p6ws/rest
-PRIMAVERA_USER = os.getenv("PRIMAVERA_USER")
-PRIMAVERA_PASS = os.getenv("PRIMAVERA_PASS")
 
 def get_auth():
     # Returnează tuple pentru Basic Auth
