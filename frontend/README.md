@@ -6,7 +6,7 @@
 
 ## 📁 Structura proiectului
 
-
+```
 
 frontend/
 ├── public/
@@ -25,7 +25,7 @@ frontend/
 ├── vite.config.js
 └── etc.
 
-
+```
 ---
 
 ## ⚙️ Pornire locală
@@ -84,7 +84,4 @@ npm run build
 * Pentru probleme tehnice, contactează echipa de dezvoltare sau deschide un issue.
 * Documentație suplimentară: vezi și `backend/README.md`.
 
-
-### Copiază direct acest cod în `frontend/README.md` și ai un README complet și curat!  
-Dacă vrei și exemplu pentru backend, spune și ți-l scriu imediat, în același stil.
 
