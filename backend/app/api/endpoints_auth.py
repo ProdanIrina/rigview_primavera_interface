@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from app.database import get_db_conn
+from backend.app.utils.database import get_db_conn
 from app.utils.security import create_jwt_token
 
 router = APIRouter()
@@ -11,11 +11,11 @@ class LoginRequest(BaseModel):
 
 @router.post("/login")
 def login_user(data: LoginRequest):
-    # 1. Test user rapid
+    # test user rapid
     if data.username == "testuser" and data.password == "testpass":
         return {"token": "test-token"}
 
-    # 2. Useri reali din SQL
+    # useri reali din SQL
     conn = get_db_conn()
     cursor = conn.cursor()
     cursor.execute(

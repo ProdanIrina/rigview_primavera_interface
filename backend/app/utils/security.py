@@ -1,5 +1,5 @@
 from jose import jwt
-from ..config import JWT_SECRET, JWT_ALGORITHM
+from .config import JWT_SECRET, JWT_ALGORITHM
 from datetime import datetime, timedelta
 
 def create_jwt_token(username):

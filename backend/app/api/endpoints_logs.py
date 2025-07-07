@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.database import get_db_conn
+from backend.app.utils.database import get_db_conn
 from app.models.app_log import AppLog
 from typing import List
 

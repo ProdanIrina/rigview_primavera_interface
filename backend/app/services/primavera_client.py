@@ -2,7 +2,7 @@ from app.utils.config import PRIMAVERA_API_URL, PRIMAVERA_USER, PRIMAVERA_PASS
 import requests
 
 def get_auth():
-    # Returnează tuple pentru Basic Auth
+    # returnează tuple pt Basic Auth
     return (PRIMAVERA_USER, PRIMAVERA_PASS)
 
 def get_projects():
@@ -15,7 +15,6 @@ def get_projects():
         params={"fields": "ObjectId,Id,Name,Status"}
     )
     resp.raise_for_status()
-    # Filtrare doar proiecte active
     return [p for p in resp.json().get("items", []) if p.get("Status") not in ["Completed", "Canceled"]]
 
 def get_project_codes(project_id):
@@ -46,7 +45,6 @@ def extract_uwi_from_codes(codes):
     Returnează codul UWI dacă există între codurile de proiect.
     """
     for c in codes:
-        # Documentația Oracle: câmpul tipului e "ProjectCodeType"
         if c.get("ProjectCodeType") == "UWI":
             return c.get("ProjectCodeValue")
     return None
