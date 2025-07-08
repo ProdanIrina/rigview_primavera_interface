@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from backend.app.utils.database import get_db_conn
+from app.utils.database import get_db_conn
 from app.models.sync_status import SyncStatus
 from typing import List
 

@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from backend.app.utils.database import get_db_conn
+from app.utils.database import get_db_conn
 from app.models.credential import Credential
 from typing import List
 

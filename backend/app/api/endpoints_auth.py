@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from backend.app.utils.database import get_db_conn
+from app.utils.database import get_db_conn
 from app.utils.security import create_jwt_token
 
 router = APIRouter()

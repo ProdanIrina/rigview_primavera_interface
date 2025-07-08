@@ -21,19 +21,19 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // La montare, opțional: încearcă să preiei user/parolă din API (dacă există și remember)
-  useEffect(() => {
-    fetch("http://localhost:8000/credentials/latest")
-      .then(res => res.json())
-      .then(data => {
-        if (data?.username && data?.password) {
-          setUsername(data.username);
-          setPassword(data.password);  // În real life, parola nu ar trebui să fie vizibilă așa, dar pentru mock e ok
-          setRememberMe(true);
-        }
-      })
-      .catch(() => {});
-  }, []);
+  // // La montare, opțional: încearcă să preiei user/parolă din API (dacă există și remember)
+  // useEffect(() => {
+  //   fetch("http://localhost:8000/credentials/latest")
+  //     .then(res => res.json())
+  //     .then(data => {
+  //       if (data?.username && data?.password) {
+  //         setUsername(data.username);
+  //         setPassword(data.password);  // În real life, parola nu ar trebui să fie vizibilă așa, dar pentru mock e ok
+  //         setRememberMe(true);
+  //       }
+  //     })
+  //     .catch(() => {});
+  // }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
